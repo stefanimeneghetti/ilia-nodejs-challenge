@@ -12,3 +12,16 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  user_id String
+  type TransactionType
+  amount Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
