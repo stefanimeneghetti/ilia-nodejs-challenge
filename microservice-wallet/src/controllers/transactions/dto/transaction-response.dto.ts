@@ -11,6 +11,10 @@ export class TransactionResponseDto {
     this.amount = payload.amount;
   }
 
+  static fromArray(payloads: TransactionEntity[]): TransactionResponseDto[] {
+    return payloads.map((payload) => new TransactionResponseDto(payload));
+  }
+
   id!: number;
   user_id!: string;
   type!: TransactionType;
