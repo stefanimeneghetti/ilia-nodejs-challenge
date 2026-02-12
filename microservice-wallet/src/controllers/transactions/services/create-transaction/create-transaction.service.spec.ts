@@ -1,18 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateTransactionService } from './create-transaction.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { TransactionRepository } from 'src/repositories/transaction.repository';
 import { ConsoleLogger, InternalServerErrorException } from '@nestjs/common';
 import { CreateTransactionDto } from '../../dto/create-transaction.dto';
 import { TransactionResponseDto } from '../../dto/transaction-response.dto';
-import { TransactionType } from '@prisma/client';
+import { TransactionType } from 'src/repositories/transaction.entity';
 
 describe('CreateTransactionService', () => {
   let service: CreateTransactionService;
 
-  const mockPrismaService = {
-    transaction: {
-      create: jest.fn(),
-    },
+  const mockTransactionRepository = {
+    create: jest.fn(),
   };
 
   const mockLogger = {
@@ -26,8 +24,8 @@ describe('CreateTransactionService', () => {
       providers: [
         CreateTransactionService,
         {
-          provide: PrismaService,
-          useValue: mockPrismaService,
+          provide: TransactionRepository,
+          useValue: mockTransactionRepository,
         },
         {
           provide: ConsoleLogger,
@@ -56,7 +54,7 @@ describe('CreateTransactionService', () => {
     };
 
     it('should create a transaction successfully', async () => {
-      mockPrismaService.transaction.create.mockResolvedValue(
+      mockTransactionRepository.create.mockResolvedValue(
         mockTransactionResponse,
       );
 
@@ -68,15 +66,10 @@ describe('CreateTransactionService', () => {
       expect(mockLogger.log).toHaveBeenCalledWith('Started execution');
       expect(mockLogger.log).toHaveBeenCalledWith('Created transaction');
 
-      expect(mockPrismaService.transaction.create).toHaveBeenCalledWith({
-        data: mockCreateTransactionDto,
-        select: {
-          id: true,
-          user_id: true,
-          amount: true,
-          type: true,
-        },
-      });
+      expect(mockTransactionRepository.create).toHaveBeenCalledWith(
+        mockCreateTransactionDto,
+      );
+      expect(mockTransactionRepository.create).toHaveBeenCalledTimes(1);
 
       expect(result).toEqual(mockTransactionResponse);
     });
@@ -95,17 +88,18 @@ describe('CreateTransactionService', () => {
         type: TransactionType.DEBIT,
       };
 
-      mockPrismaService.transaction.create.mockResolvedValue(debitResponse);
+      mockTransactionRepository.create.mockResolvedValue(debitResponse);
 
       const result = await service.execute(debitDto);
 
+      expect(mockTransactionRepository.create).toHaveBeenCalledWith(debitDto);
       expect(result).toEqual(debitResponse);
       expect(result.type).toBe(TransactionType.DEBIT);
     });
 
     it('should throw InternalServerErrorException when create transaction fails', async () => {
       const dbError = new Error('Database connection failed');
-      mockPrismaService.transaction.create.mockRejectedValue(dbError);
+      mockTransactionRepository.create.mockRejectedValue(dbError);
 
       await expect(service.execute(mockCreateTransactionDto)).rejects.toThrow(
         InternalServerErrorException,
@@ -115,11 +109,28 @@ describe('CreateTransactionService', () => {
         'Unable to create transaction',
       );
 
+      expect(mockTransactionRepository.create).toHaveBeenCalledWith(
+        mockCreateTransactionDto,
+      );
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Failed to create transaction',
         dbError,
       );
       expect(mockLogger.log).not.toHaveBeenCalledWith('Created transaction');
+    });
+
+    it('should handle non-Error objects in catch block', async () => {
+      const nonErrorObject = 'String error message';
+      mockTransactionRepository.create.mockRejectedValue(nonErrorObject);
+
+      await expect(service.execute(mockCreateTransactionDto)).rejects.toThrow(
+        InternalServerErrorException,
+      );
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to create transaction',
+        nonErrorObject,
+      );
     });
   });
 });

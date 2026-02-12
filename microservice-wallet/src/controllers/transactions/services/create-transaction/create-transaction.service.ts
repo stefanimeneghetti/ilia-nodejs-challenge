@@ -3,15 +3,15 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTransactionDto } from '../../dto/create-transaction.dto';
 import { TransactionResponseDto } from '../../dto/transaction-response.dto';
+import { TransactionRepository } from 'src/repositories/transaction.repository';
 
 @Injectable()
 export class CreateTransactionService {
   constructor(
     private readonly logger: ConsoleLogger,
-    private readonly prisma: PrismaService,
+    private readonly transactionRepository: TransactionRepository,
   ) {}
 
   public async execute(
@@ -21,19 +21,12 @@ export class CreateTransactionService {
     this.logger.log('Started execution');
 
     try {
-      const newTransaction = await this.prisma.transaction.create({
-        data: createTransactionDto,
-        select: {
-          id: true,
-          user_id: true,
-          amount: true,
-          type: true,
-        },
-      });
+      const newTransaction =
+        await this.transactionRepository.create(createTransactionDto);
 
       this.logger.log('Created transaction');
 
-      return newTransaction;
+      return new TransactionResponseDto(newTransaction);
     } catch (error) {
       this.logger.error('Failed to create transaction', error);
 
