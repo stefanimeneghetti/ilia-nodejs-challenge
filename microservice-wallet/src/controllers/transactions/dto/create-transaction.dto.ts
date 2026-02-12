@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
-import { TransactionType } from '@prisma/client';
+import { TransactionType } from 'src/repositories/transaction.entity';
 
 export class CreateTransactionDto {
   @IsString()
