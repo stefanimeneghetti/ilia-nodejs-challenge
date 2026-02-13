@@ -1,9 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
 import { TransactionRepository } from './transaction.repository';
-// ... outros repositories
 
-@Global() // Torna global para não precisar importar em todo lugar
+@Global()
 @Module({
   imports: [PrismaModule],
   providers: [TransactionRepository],

@@ -18,10 +18,10 @@ enum TransactionType {
 }
 
 model Transaction {
-  id        Int      @id @default(autoincrement())
-  user_id String
-  type TransactionType
-  amount Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String           @id @default(cuid())  @db.VarChar(25)
+  user_id   String                                 @db.VarChar(25)
+  type      TransactionType
+  amount    Int
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 }
