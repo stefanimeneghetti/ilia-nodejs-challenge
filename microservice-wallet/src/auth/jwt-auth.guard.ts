@@ -20,7 +20,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     user: TUser | null,
   ): TUser {
     if (err || !user) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Access token is missing or invalid');
     }
 
     return user;
