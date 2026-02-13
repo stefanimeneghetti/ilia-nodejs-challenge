@@ -1,8 +1,16 @@
-import { Paper, Typography, Box } from "@mui/material";
-import StatementFilters from "./StatementFilters";
-import Transaction from "./Transaction";
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import {
+  StyledPaper,
+  HeaderBox,
+  TitleTypography,
+  TransactionsContainer,
+  LoadingTypography,
+  ErrorTypography,
+  EmptyStateTypography,
+} from "./Statement.styles";
+import StatementFilters from "../StatementFilters/StatementFilters";
+import Transaction from "../Transaction/Transaction";
 
 interface Transaction {
   id: string;
@@ -17,7 +25,6 @@ function Statement() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [activeFilter, setActiveFilter] = useState<FilterValue>(null);
 
   const loadTransactions = useCallback(async () => {
@@ -47,33 +54,37 @@ function Statement() {
     loadTransactions();
   }, [loadTransactions]);
 
+  const renderContent = () => {
+    if (loading) {
+      return <LoadingTypography>Carregando...</LoadingTypography>;
+    }
+
+    if (error) {
+      return <ErrorTypography color="error">{error}</ErrorTypography>;
+    }
+
+    if (transactions.length === 0) {
+      return (
+        <EmptyStateTypography color="text.secondary">
+          Nenhuma transação encontrada
+        </EmptyStateTypography>
+      );
+    }
+
+    return transactions.map((transaction) => (
+      <Transaction key={transaction.id} transaction={transaction} />
+    ));
+  };
+
   return (
-    <Paper elevation={0} sx={{ p: 2, border: "1px solid #f1f5f9" }}>
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-          Histórico
-        </Typography>
+    <StyledPaper elevation={0}>
+      <HeaderBox>
+        <TitleTypography variant="h6">Histórico</TitleTypography>
         <StatementFilters onFilterChange={setActiveFilter} />
-      </Box>
+      </HeaderBox>
 
-      <Box>
-        {loading && <Typography>Carregando...</Typography>}
-
-        {error && <Typography color="error">{error}</Typography>}
-
-        {!loading && !error && transactions.length === 0 && (
-          <Typography color="text.secondary">
-            Nenhuma transação encontrada
-          </Typography>
-        )}
-
-        {!loading &&
-          !error &&
-          transactions.map((transaction) => (
-            <Transaction key={transaction.id} transaction={transaction} />
-          ))}
-      </Box>
-    </Paper>
+      <TransactionsContainer>{renderContent()}</TransactionsContainer>
+    </StyledPaper>
   );
 }
 

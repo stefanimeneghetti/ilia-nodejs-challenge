@@ -1,6 +1,6 @@
-import { Box, Button, useTheme } from "@mui/material";
 import { useState } from "react";
-import type { FilterValue } from "./Statement";
+import { FiltersContainer, FilterButton } from "./StatementFilters.styles";
+import type { FilterValue } from "../Statement/Statement";
 
 interface Filter {
   label: string;
@@ -16,7 +16,6 @@ export default function StatementFilters({
   onFilterChange,
   initialFilter = null,
 }: StatementFiltersProps) {
-  const theme = useTheme();
   const [selectedFilter, setSelectedFilter] =
     useState<FilterValue>(initialFilter);
 
@@ -31,35 +30,19 @@ export default function StatementFilters({
     onFilterChange(filter);
   };
 
-  const buttonStyles = (isSelected: boolean) => ({
-    borderRadius: "20px",
-    textTransform: "none",
-    px: 2,
-    borderColor: theme.palette.divider,
-    bgcolor: isSelected ? theme.palette.primary.main : "transparent",
-    color: isSelected
-      ? theme.palette.common.white
-      : theme.palette.text.secondary,
-    "&:hover": {
-      bgcolor: isSelected
-        ? theme.palette.primary.dark
-        : theme.palette.action.hover,
-    },
-  });
-
   return (
-    <Box sx={{ display: "flex", gap: 1 }}>
+    <FiltersContainer>
       {filters.map((filter) => (
-        <Button
+        <FilterButton
           key={filter.label}
           variant={selectedFilter === filter.value ? "contained" : "outlined"}
           size="small"
           onClick={() => handleFilterClick(filter.value)}
-          sx={buttonStyles(selectedFilter === filter.value)}
+          $isSelected={selectedFilter === filter.value}
         >
           {filter.label}
-        </Button>
+        </FilterButton>
       ))}
-    </Box>
+    </FiltersContainer>
   );
 }

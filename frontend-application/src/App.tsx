@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@mui/material";
-import Header from "./components/Header";
-import BalanceCard from "./components/BalanceCard";
-import Statement from "./components/Statement";
+import Header from "./components/Header/Header";
+import BalanceCard from "./components/BalanceCard/BalanceCard";
+import Statement from "./components/Statement/Statement";
 import "./index.css";
 import { theme } from "./theme";
 
