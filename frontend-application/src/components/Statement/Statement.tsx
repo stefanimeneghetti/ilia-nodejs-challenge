@@ -21,7 +21,11 @@ interface Transaction {
 
 export type FilterValue = null | "CREDIT" | "DEBIT";
 
-function Statement() {
+interface StatementProps {
+  refreshTrigger?: number;
+}
+
+function Statement({ refreshTrigger = 0 }: StatementProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +52,7 @@ function Statement() {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter]);
+  }, [activeFilter, refreshTrigger]);
 
   useEffect(() => {
     loadTransactions();
