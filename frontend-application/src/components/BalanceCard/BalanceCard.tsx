@@ -9,7 +9,11 @@ import {
   StyledBalanceValue,
 } from "./BalanceCard.styles";
 
-function BalanceCard() {
+interface BalanceCardProps {
+  refreshTrigger?: number;
+}
+
+function BalanceCard({ refreshTrigger }: BalanceCardProps) {
   const theme = useTheme();
   const [balance, setBalance] = useState(0);
   const [error, setError] = useState(false);
@@ -23,7 +27,7 @@ function BalanceCard() {
           Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
         },
       });
-      setBalance(response.data.amount);
+      setBalance(response.data.amount ?? 0);
     } catch (e) {
       console.error("Error when loading balance");
       setError(true);
@@ -34,7 +38,7 @@ function BalanceCard() {
 
   useEffect(() => {
     loadBalance();
-  }, []);
+  }, [refreshTrigger]);
 
   const getBalanceColor = () => {
     if (error) return theme.palette.error.main;
