@@ -44,6 +44,7 @@ export const ErrorTypography = styled(Typography)(({ theme }) => ({
   color: theme.palette.error.main,
   backgroundColor: theme.palette.error.light + "20",
   borderRadius: theme.shape.borderRadius,
+  marginTop: 5,
 }));
 
 export const EmptyStateTypography = styled(Typography)(({ theme }) => ({

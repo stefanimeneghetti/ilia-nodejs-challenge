@@ -16,7 +16,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <Header onTransactionCreated={handleTransactionCreated} />
       <main className="container">
-        <BalanceCard />
+        <BalanceCard refreshTrigger={refreshTrigger} />
         <Statement refreshTrigger={refreshTrigger} />
       </main>
     </ThemeProvider>

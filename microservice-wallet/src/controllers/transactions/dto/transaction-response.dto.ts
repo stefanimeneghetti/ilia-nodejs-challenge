@@ -15,7 +15,7 @@ export class TransactionResponseDto {
     return payloads.map((payload) => new TransactionResponseDto(payload));
   }
 
-  id!: number;
+  id!: string;
   user_id!: string;
   type!: TransactionType;
   amount!: number;

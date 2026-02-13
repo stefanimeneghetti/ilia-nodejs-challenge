@@ -1,0 +1,16 @@
+# .dockerignore
+node_modules
+npm-debug.log
+dist
+.git
+.env
+.env.local
+.env.*.local
+
+# Arquivos de teste e utilitários
+generate-test-token.ts
+**/*.test.ts
+**/*.spec.ts
+test/
+tests/
+__tests__/
