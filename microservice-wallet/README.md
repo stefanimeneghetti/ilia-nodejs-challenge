@@ -1,76 +1,82 @@
 # Microservice Wallet
 
-Microserviço de carteira digital desenvolvido com NestJS, Prisma ORM e PostgreSQL, totalmente containerizado com Docker.
+Digital wallet microservice developed with NestJS, Prisma ORM and PostgreSQL, fully containerized with Docker.
 
-## 📋 Pré-requisitos
+## 📋 Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
-- [Node.js](https://nodejs.org/) (v22 ou superior) - para desenvolvimento local
-- [npm](https://www.npmjs.com/) (v10 ou superior)
+- [Node.js](https://nodejs.org/) (v22 or higher) - for local development
+- [npm](https://www.npmjs.com/) (v10 or higher)
 
-## 🔧 Instalação e Execução
+## 🔧 Installation and Execution
 
-1. **Clone o repositório**
+**1. Clone the repository**
 
 ```bash
 git clone https://github.com/stefanimeneghetti/ilia-nodejs-challenge
 cd ilia-nodejs-challenge/microservice-wallet
 ```
 
-2. **Configure o .env**
+2. **Configure environment variables**
 
-Você pode apenas clonar o valor disponível no .env.example e alterar conforme sua necessidade.
+You can clone the values from .env.example and change them as needed.
 
-### Com Docker
+```bash
+cp .env.example .env
+```
 
-1. **Execute com Docker Compose**
+### With Docker
+
+1. **Run Docker Composee**
 
 ```bash
 docker-compose up -d
 ```
 
-2. **Verificação de logs**
+2. **Check logs**
 
-Para verificar os logs da api use:
+To check the API logs use:
 
 ```bash
 docker-compose logs -f app
 ```
 
-Para os logs do banco de dados use:
+To check the database logs use:
 
 ```bash
 docker-compose logs -f postgres
 ```
 
-A aplicação estará disponível em http://localhost:3001
+The application will be available at http://localhost:3001
 
-### Desenvolvimento Local (sem Docker)
+### Local Development (without Docker)
 
-1. **Instale as dependências**
+1. **Install dependencies**
 
 ```bash
 npm install
 ```
 
-2. **Configure o banco de dados PostgreSQL**
+2. **Configure PostgreSQL database**
 
-Caso queira utilizar a instancia configurada no docker basta rodar:
+If you want to use the Docker instance just run:
 
 ```bash
 docker-compose up -d postgres
 ```
 
-3. **Execute as migrations do prisma**
+3. **Run Prisma migrations**
 
 ```bash
 npx prisma migrate deploy
 npx prisma generate
 ```
 
-5. **Inicie o servidor de desenvolvimento**
+5. **Start the development server**
 
 ```bash
 npm run start:dev
 ```
+
+The application will be available at http://localhost:3001
