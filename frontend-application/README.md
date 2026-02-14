@@ -17,7 +17,7 @@ This is a React project that consumes the microservice-wallet API.
 
 ```bash
 git clone https://github.com/stefanimeneghetti/ilia-nodejs-challenge
-cd frontend-application
+cd ilia-nodejs-challenge/frontend-application
 ```
 
 **2. Install dependencies**
