@@ -8,9 +8,10 @@ import {
 } from "./Header.styles";
 import { useState } from "react";
 import TransactionModal from "../CreateTransactionModal/CreateTransactionModal";
-import axios from "axios";
+import api from "src/services/api";
 import { Snackbar, Alert, type AlertColor } from "@mui/material";
 import getErrorMessage from "../../utils/getErrorMessage";
+import { useTranslation } from "react-i18next";
 
 interface Transaction {
   user_id: string;
@@ -29,6 +30,7 @@ interface SnackbarState {
 }
 
 function Header({ onTransactionCreated }: HeaderProps) {
+  const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false,
@@ -61,19 +63,15 @@ function Header({ onTransactionCreated }: HeaderProps) {
     setLoading(true);
 
     try {
-      await axios.post("/api/transactions", transaction, {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-        },
-      });
+      await api.post("/api/transactions", transaction);
 
-      showSnackbar("Transação criada com sucesso!", "success");
+      showSnackbar(t("createNewTransactionSucceed"), "success");
       onTransactionCreated?.();
       handleCloseModal();
     } catch (error) {
       console.error("Erro ao criar uma nova transação:", error);
 
-      const errorMessage = getErrorMessage(error);
+      const errorMessage = getErrorMessage(error, t);
 
       showSnackbar(errorMessage, "error");
     } finally {
@@ -90,7 +88,7 @@ function Header({ onTransactionCreated }: HeaderProps) {
       <HeaderRoot>
         <HeaderContainer className="container">
           <HeaderTitle variant="h6" as="h1">
-            Transações
+            {t("headerTitle")}
           </HeaderTitle>
 
           <NewTransactionButton
@@ -99,7 +97,11 @@ function Header({ onTransactionCreated }: HeaderProps) {
             startIcon={<Add />}
             disabled={loading}
           >
-            <ButtonText>{loading ? "Criando..." : "Nova Transação"}</ButtonText>
+            <ButtonText>
+              {loading
+                ? t("createNewTransactionButtonLoading")
+                : t("createNewTransactionButton")}
+            </ButtonText>
           </NewTransactionButton>
         </HeaderContainer>
       </HeaderRoot>

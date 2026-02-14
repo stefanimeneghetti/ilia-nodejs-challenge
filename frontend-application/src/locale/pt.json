@@ -1,0 +1,35 @@
+{
+  "translation": {
+    "headerTitle": "Transações",
+    "createNewTransactionButton": "Nova transação",
+    "createNewTransactionButtonLoading": "Criando...",
+    "createNewTransactionSucceed": "Transação criada com sucesso!",
+    "currentBalance": "Saldo",
+    "statementTitle": "Histórico",
+    "transactionTypeAll": "Todos",
+    "transactionTypeCredit": "Crédito",
+    "transactionTypeDebit": "Débito",
+    "cancelButtonText": "Cancelar",
+    "saveButtonText": "Salvar",
+    "unavailableBalance": "Saldo indisponível",
+    "unavailableBalanceDescription": "Não foi possível carregar seu saldo. Tente novamente mais tarde.",
+    "loadTransactionsFail": "Falha ao carregar transações. Tente novamente.",
+    "noTransactions": "Nenhuma transação encontrada",
+    "loadingLabel": "Carregando...",
+    "createTransactionError": "Erro ao criar transação. Tente novamente.",
+    "unauthorizedErrorMessage": "Não autorizado. Verifique suas credenciais.",
+    "invalidDataErrorMessage": "Dados inválidos. Verifique as informações.",
+    "serverErrorMessage": "Erro no servidor. Tente novamente mais tarde.",
+    "balanceValue": "R$ {{value}}",
+    "format.decimal": "pt-BR",
+    "userIdHint": "Use apenas letras, números e underscore (_)",
+    "userIdError": "ID do usuário não pode conter espaços ou caracteres especiais",
+    "userIdLabel": "ID do Usuário",
+
+    "amountLabel": "Valor",
+    "amountPlaceholder": "Digite o valor (apenas números inteiros)",
+    "amountError": "Digite um número inteiro válido",
+
+    "typeLabel": "Tipo"
+  }
+}

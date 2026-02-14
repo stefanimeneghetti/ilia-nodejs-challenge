@@ -1,0 +1,35 @@
+{
+  "translation": {
+    "headerTitle": "Transactions",
+    "createNewTransactionButton": "New transaction",
+    "createNewTransactionButtonLoading": "Creating...",
+    "createNewTransactionSucceed": "Transaction created successfully!",
+    "currentBalance": "Balance",
+    "statementTitle": "History",
+    "transactionTypeAll": "All",
+    "transactionTypeCredit": "Credit",
+    "transactionTypeDebit": "Debit",
+    "cancelButtonText": "Cancel",
+    "saveButtonText": "Save",
+    "unavailableBalance": "Balance unavailable",
+    "unavailableBalanceDescription": "Unable to load your balance. Please try again later.",
+    "loadTransactionsFail": "Failed to load transactions. Please try again.",
+    "noTransactions": "No transactions found",
+    "loadingLabel": "Loading...",
+    "createTransactionError": "Error creating transaction. Please try again.",
+    "unauthorizedErrorMessage": "Unauthorized. Please check your credentials.",
+    "invalidDataErrorMessage": "Invalid data. Please check the information.",
+    "serverErrorMessage": "Server error. Please try again later.",
+    "balanceValue": "$ {{value}}",
+    "format.decimal": "en-US",
+    "userIdHint": "Use only letters, numbers and underscore (_)",
+    "userIdError": "User ID cannot contain spaces or special characters",
+    "userIdLabel": "User ID",
+
+    "amountLabel": "Amount",
+    "amountPlaceholder": "Enter the amount (whole numbers only)",
+    "amountError": "Enter a valid whole number",
+
+    "typeLabel": "Type"
+  }
+}

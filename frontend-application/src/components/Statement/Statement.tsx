@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import api from "src/services/api";
 import {
   StyledPaper,
   HeaderBox,
@@ -11,6 +11,7 @@ import {
 } from "./Statement.styles";
 import StatementFilters from "../StatementFilters/StatementFilters";
 import Transaction from "../Transaction/Transaction";
+import { useTranslation } from "react-i18next";
 
 interface Transaction {
   id: string;
@@ -26,6 +27,7 @@ interface StatementProps {
 }
 
 function Statement({ refreshTrigger = 0 }: StatementProps) {
+  const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,10 +38,7 @@ function Statement({ refreshTrigger = 0 }: StatementProps) {
     setError(null);
 
     try {
-      const response = await axios.get("/api/transactions", {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-        },
+      const response = await api.get("/api/transactions", {
         params: {
           ...(activeFilter && { type: activeFilter }),
         },
@@ -48,7 +47,7 @@ function Statement({ refreshTrigger = 0 }: StatementProps) {
       setTransactions(response.data);
     } catch (error) {
       console.error("Erro ao carregar transações:", error);
-      setError("Falha ao carregar transações. Tente novamente.");
+      setError(t("loadTransactionsFail"));
     } finally {
       setLoading(false);
     }
@@ -60,7 +59,7 @@ function Statement({ refreshTrigger = 0 }: StatementProps) {
 
   const renderContent = () => {
     if (loading) {
-      return <LoadingTypography>Carregando...</LoadingTypography>;
+      return <LoadingTypography>{t("loadingLabel")}</LoadingTypography>;
     }
 
     if (error) {
@@ -70,7 +69,7 @@ function Statement({ refreshTrigger = 0 }: StatementProps) {
     if (transactions.length === 0) {
       return (
         <EmptyStateTypography color="text.secondary">
-          Nenhuma transação encontrada
+          {t("noTransactions")}
         </EmptyStateTypography>
       );
     }
@@ -83,7 +82,7 @@ function Statement({ refreshTrigger = 0 }: StatementProps) {
   return (
     <StyledPaper elevation={0}>
       <HeaderBox>
-        <TitleTypography variant="h6">Histórico</TitleTypography>
+        <TitleTypography variant="h6">{t("statementTitle")}</TitleTypography>
         <StatementFilters onFilterChange={setActiveFilter} />
       </HeaderBox>
 

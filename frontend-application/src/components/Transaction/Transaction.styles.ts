@@ -73,3 +73,9 @@ export const UserId = styled(Typography)(({ theme }) => ({
 export const StyledDivider = styled(Divider)({
   width: "100%",
 });
+
+export const IconWrapper = styled(Box)(({ theme }) => ({
+  [theme.breakpoints.down("sm")]: {
+    display: "none",
+  },
+}));

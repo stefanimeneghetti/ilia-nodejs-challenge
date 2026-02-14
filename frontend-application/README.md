@@ -16,7 +16,7 @@ This is a React project that consumes the microservice-wallet API.
 **1. Clone the repository**
 
 ```bash
-git clone [repository-url]
+git clone https://github.com/stefanimeneghetti/ilia-nodejs-challenge
 cd frontend-application
 ```
 
@@ -34,7 +34,15 @@ yarn install
 cp .env.example .env
 ```
 
-Change the `VITE_AUTH_TOKEN` variable to a valid token. You can generate a test token valid for 1 hour using the command:
+Change the `VITE_AUTH_TOKEN` variable to a valid token. You can generate a test token (valid for 1 hour) using one of the following commands:
+
+If you haven't installed dependencies yet:
+
+```bash
+(cd ../microservice-wallet && npm i && npx ts-node generate-test-token.ts)
+```
+
+If you've already run npm i in the microservice folder:
 
 ```bash
 npx ts-node ../microservice-wallet/generate-test-token.ts

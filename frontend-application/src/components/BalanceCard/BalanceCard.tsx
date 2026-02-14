@@ -1,5 +1,5 @@
 import { useTheme } from "@mui/material";
-import axios from "axios";
+import api from "src/services/api";
 import { useEffect, useState } from "react";
 import {
   StyledPaper,
@@ -8,12 +8,14 @@ import {
   StyledErrorMessage,
   StyledBalanceValue,
 } from "./BalanceCard.styles";
+import { useTranslation } from "react-i18next";
 
 interface BalanceCardProps {
   refreshTrigger?: number;
 }
 
 function BalanceCard({ refreshTrigger }: BalanceCardProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [balance, setBalance] = useState(0);
   const [error, setError] = useState(false);
@@ -22,11 +24,7 @@ function BalanceCard({ refreshTrigger }: BalanceCardProps) {
   const loadBalance = async () => {
     try {
       setError(false);
-      const response = await axios.get("/api/balance", {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-        },
-      });
+      const response = await api.get("/api/balance");
       setBalance(response.data.amount ?? 0);
     } catch (e) {
       console.error("Error when loading balance");
@@ -55,11 +53,11 @@ function BalanceCard({ refreshTrigger }: BalanceCardProps) {
     return (
       <StyledPaper error errorColor={theme.palette.error.light}>
         <StyledErrorSubtitle errorColor={theme.palette.error.main}>
-          SALDO INDISPONÍVEL
+          {t("unavailableBalance")}
         </StyledErrorSubtitle>
 
         <StyledErrorMessage variant="body1">
-          Não foi possível carregar seu saldo. Tente novamente mais tarde.
+          {t("unavailableBalanceDescription")}
         </StyledErrorMessage>
       </StyledPaper>
     );
@@ -67,10 +65,17 @@ function BalanceCard({ refreshTrigger }: BalanceCardProps) {
 
   return (
     <StyledPaper>
-      <StyledSubtitle variant="subtitle2">SALDO TOTAL</StyledSubtitle>
+      <StyledSubtitle variant="subtitle2">{t("currentBalance")}</StyledSubtitle>
 
       <StyledBalanceValue variant="h4" as="p" balanceColor={getBalanceColor()}>
-        {loading ? "..." : `R$ ${balance.toFixed(2)}`}
+        {loading
+          ? "..."
+          : t("balanceValue", {
+              value: Intl.NumberFormat(t("format.decimal"), {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }).format(balance),
+            })}
       </StyledBalanceValue>
     </StyledPaper>
   );
