@@ -1,11 +1,16 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import axios from "axios";
 import Header from "./Header";
+import api from "src/services/api";
 
-vi.mock("axios");
-const mockedAxios = vi.mocked(axios, true);
+vi.mock("src/services/api", () => ({
+  default: {
+    post: vi.fn(),
+  },
+}));
+
+const mockedApiPost = vi.mocked(api.post);
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -69,7 +74,7 @@ describe("Header Component", () => {
 
   it("should call onTransactionCreated when transaction is created successfully", async () => {
     const user = userEvent.setup();
-    mockedAxios.post.mockResolvedValueOnce({ data: { id: "123" } });
+    mockedApiPost.mockResolvedValueOnce({ data: { id: "123" } });
 
     render(<Header onTransactionCreated={mockOnTransactionCreated} />);
 
@@ -82,15 +87,11 @@ describe("Header Component", () => {
     await user.click(screen.getByText("Save"));
 
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledWith(
-        "/api/transactions",
-        { user_id: "user1", type: "CREDIT", amount: 100 },
-        {
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-          },
-        },
-      );
+      expect(mockedApiPost).toHaveBeenCalledWith("/api/transactions", {
+        user_id: "user1",
+        type: "CREDIT",
+        amount: 100,
+      });
     });
 
     await waitFor(() => {
@@ -104,7 +105,7 @@ describe("Header Component", () => {
 
   it("should show success snackbar when transaction is created", async () => {
     const user = userEvent.setup();
-    mockedAxios.post.mockResolvedValueOnce({ data: { id: "123" } });
+    mockedApiPost.mockResolvedValueOnce({ data: { id: "123" } });
 
     render(<Header />);
 
@@ -129,7 +130,7 @@ describe("Header Component", () => {
   it("should show error snackbar when transaction creation fails", async () => {
     const user = userEvent.setup();
     const error = new Error("Network Error");
-    mockedAxios.post.mockRejectedValueOnce(error);
+    mockedApiPost.mockRejectedValueOnce(error);
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -158,7 +159,7 @@ describe("Header Component", () => {
 
   it("should handle multiple transaction creations", async () => {
     const user = userEvent.setup();
-    mockedAxios.post.mockResolvedValue({ data: { id: "123" } });
+    mockedApiPost.mockResolvedValue({ data: { id: "123" } });
 
     render(<Header onTransactionCreated={mockOnTransactionCreated} />);
 
@@ -186,6 +187,6 @@ describe("Header Component", () => {
       expect(mockOnTransactionCreated).toHaveBeenCalledTimes(2);
     });
 
-    expect(mockedAxios.post).toHaveBeenCalledTimes(2);
+    expect(mockedApiPost).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,10 +1,16 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import axios from "axios";
 import BalanceCard from "./BalanceCard";
 
-vi.mock("axios");
-const mockedAxios = vi.mocked(axios, true);
+import api from "src/services/api";
+
+vi.mock("src/services/api", () => ({
+  default: {
+    get: vi.fn(),
+  },
+}));
+
+const mockedApiGet = vi.mocked(api.get);
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -40,7 +46,7 @@ describe("BalanceCard Component", () => {
   });
 
   it("should load and display balance successfully", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedApiGet.mockResolvedValueOnce({
       data: { amount: 1500.5 },
     });
 
@@ -51,15 +57,11 @@ describe("BalanceCard Component", () => {
     });
 
     expect(screen.getByText(/\$/)).toBeInTheDocument();
-    expect(mockedAxios.get).toHaveBeenCalledWith("/api/balance", {
-      headers: {
-        Authorization: "Bearer fake-token",
-      },
-    });
+    expect(mockedApiGet).toHaveBeenCalledWith("/api/balance");
   });
 
   it("should display zero balance when amount is not present", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedApiGet.mockResolvedValueOnce({
       data: {},
     });
 
@@ -71,7 +73,7 @@ describe("BalanceCard Component", () => {
   });
 
   it("should show error message when request fails", async () => {
-    mockedAxios.get.mockRejectedValueOnce(new Error("Network error"));
+    mockedApiGet.mockRejectedValueOnce(new Error("Network error"));
 
     render(<BalanceCard />);
 
@@ -87,14 +89,14 @@ describe("BalanceCard Component", () => {
   });
 
   it("should reload balance when refreshTrigger changes", async () => {
-    mockedAxios.get.mockResolvedValue({
+    mockedApiGet.mockResolvedValue({
       data: { amount: 1000 },
     });
 
     const { rerender } = render(<BalanceCard refreshTrigger={0} />);
 
     await waitFor(() => {
-      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+      expect(mockedApiGet).toHaveBeenCalledTimes(1);
     });
 
     await waitFor(() => {
@@ -104,12 +106,12 @@ describe("BalanceCard Component", () => {
     rerender(<BalanceCard refreshTrigger={1} />);
 
     await waitFor(() => {
-      expect(mockedAxios.get).toHaveBeenCalledTimes(2);
+      expect(mockedApiGet).toHaveBeenCalledTimes(2);
     });
   });
 
   it("should correctly format negative values", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedApiGet.mockResolvedValueOnce({
       data: { amount: -500.75 },
     });
 
@@ -121,7 +123,7 @@ describe("BalanceCard Component", () => {
   });
 
   it("should reset error state before new request", async () => {
-    mockedAxios.get.mockRejectedValueOnce(new Error("Network error"));
+    mockedApiGet.mockRejectedValueOnce(new Error("Network error"));
 
     const { rerender } = render(<BalanceCard refreshTrigger={0} />);
 
@@ -129,7 +131,7 @@ describe("BalanceCard Component", () => {
       expect(screen.getByText("Balance Unavailable")).toBeInTheDocument();
     });
 
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedApiGet.mockResolvedValueOnce({
       data: { amount: 2000 },
     });
 

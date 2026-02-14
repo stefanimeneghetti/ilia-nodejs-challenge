@@ -43,7 +43,6 @@ describe("StatementFilters Component", () => {
     const creditButton = screen.getByRole("button", { name: "Credit" });
     const debitButton = screen.getByRole("button", { name: "Debit" });
 
-    // Verifica se o botão Credit tem a classe de selecionado
     expect(creditButton.className).toContain("MuiButton-contained");
     expect(allButton.className).toContain("MuiButton-outlined");
     expect(debitButton.className).toContain("MuiButton-outlined");
@@ -56,7 +55,6 @@ describe("StatementFilters Component", () => {
     const creditButton = screen.getByRole("button", { name: "Credit" });
     await user.click(creditButton);
 
-    // O callback deve ser chamado imediatamente
     expect(mockOnFilterChange).toHaveBeenCalledTimes(1);
     expect(mockOnFilterChange).toHaveBeenCalledWith("CREDIT");
   });
@@ -91,35 +89,28 @@ describe("StatementFilters Component", () => {
     const creditButton = screen.getByRole("button", { name: "Credit" });
     const debitButton = screen.getByRole("button", { name: "Debit" });
 
-    // Estado inicial: All selecionado
     expect(allButton.className).toContain("MuiButton-contained");
     expect(creditButton.className).toContain("MuiButton-outlined");
     expect(debitButton.className).toContain("MuiButton-outlined");
 
-    // Clicar em Credit
     await user.click(creditButton);
 
-    // Aguardar atualização do estado
     await waitFor(() => {
       expect(creditButton.className).toContain("MuiButton-contained");
     });
     expect(allButton.className).toContain("MuiButton-outlined");
     expect(debitButton.className).toContain("MuiButton-outlined");
 
-    // Clicar em Debit
     await user.click(debitButton);
 
-    // Aguardar atualização do estado
     await waitFor(() => {
       expect(debitButton.className).toContain("MuiButton-contained");
     });
     expect(creditButton.className).toContain("MuiButton-outlined");
     expect(allButton.className).toContain("MuiButton-outlined");
 
-    // Clicar em All
     await user.click(allButton);
 
-    // Aguardar atualização do estado
     await waitFor(() => {
       expect(allButton.className).toContain("MuiButton-contained");
     });
@@ -135,7 +126,6 @@ describe("StatementFilters Component", () => {
     await user.click(screen.getByRole("button", { name: "Debit" }));
     await user.click(screen.getByRole("button", { name: "All" }));
 
-    // O callback é chamado imediatamente a cada clique
     expect(mockOnFilterChange).toHaveBeenCalledTimes(3);
     expect(mockOnFilterChange).toHaveBeenNthCalledWith(1, "CREDIT");
     expect(mockOnFilterChange).toHaveBeenNthCalledWith(2, "DEBIT");

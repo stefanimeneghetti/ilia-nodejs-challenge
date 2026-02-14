@@ -1,5 +1,5 @@
 import { useTheme } from "@mui/material";
-import axios from "axios";
+import api from "src/services/api";
 import { useEffect, useState } from "react";
 import {
   StyledPaper,
@@ -24,11 +24,7 @@ function BalanceCard({ refreshTrigger }: BalanceCardProps) {
   const loadBalance = async () => {
     try {
       setError(false);
-      const response = await axios.get("/api/balance", {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-        },
-      });
+      const response = await api.get("/api/balance");
       setBalance(response.data.amount ?? 0);
     } catch (e) {
       console.error("Error when loading balance");

@@ -1,13 +1,17 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import axios from "axios";
 import Statement from "./Statement";
+import api from "src/services/api";
 
-vi.mock("axios");
-const mockedAxios = vi.mocked(axios, true);
+vi.mock("src/services/api", () => ({
+  default: {
+    get: vi.fn(),
+  },
+}));
 
-// Mock dos componentes filhos
+const mockedApiGet = vi.mocked(api.get);
+
 vi.mock("../StatementFilters/StatementFilters", () => ({
   default: ({ onFilterChange }: { onFilterChange: (filter: any) => void }) => (
     <div data-testid="mock-statement-filters">
@@ -18,10 +22,8 @@ vi.mock("../StatementFilters/StatementFilters", () => ({
   ),
 }));
 
-// Mock condicional do Transaction - SÓ renderiza se houver transações
 vi.mock("../Transaction/Transaction", () => ({
   default: ({ transaction }: { transaction: any }) => {
-    // Só renderiza se transaction existir
     if (!transaction) return null;
 
     return (
@@ -76,7 +78,7 @@ describe("Statement Component", () => {
   });
 
   it("should load and display transactions successfully", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedApiGet.mockResolvedValueOnce({
       data: mockTransactions,
       status: 200,
       statusText: "OK",
@@ -102,7 +104,7 @@ describe("Statement Component", () => {
   });
 
   it("should display empty state when no transactions", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedApiGet.mockResolvedValueOnce({
       data: [],
       status: 200,
       statusText: "OK",
@@ -129,7 +131,7 @@ describe("Statement Component", () => {
   it("should filter transactions by type when clicking Credit button", async () => {
     const user = userEvent.setup();
 
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedApiGet.mockResolvedValueOnce({
       data: mockTransactions,
       status: 200,
       statusText: "OK",
@@ -146,7 +148,7 @@ describe("Statement Component", () => {
     const creditTransactions = mockTransactions.filter(
       (t) => t.type === "CREDIT",
     );
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedApiGet.mockResolvedValueOnce({
       data: creditTransactions,
       status: 200,
       statusText: "OK",
@@ -158,10 +160,7 @@ describe("Statement Component", () => {
     await user.click(creditButton);
 
     await waitFor(() => {
-      expect(mockedAxios.get).toHaveBeenCalledWith("/api/transactions", {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-        },
+      expect(mockedApiGet).toHaveBeenCalledWith("/api/transactions", {
         params: { type: "CREDIT" },
       });
     });
@@ -176,7 +175,7 @@ describe("Statement Component", () => {
   });
 
   it("should show error message when request fails", async () => {
-    mockedAxios.get.mockRejectedValueOnce(new Error("Network error"));
+    mockedApiGet.mockRejectedValueOnce(new Error("Network error"));
 
     render(<Statement />);
 
@@ -193,7 +192,7 @@ describe("Statement Component", () => {
   });
 
   it("should reload transactions when refreshTrigger changes", async () => {
-    mockedAxios.get.mockResolvedValue({
+    mockedApiGet.mockResolvedValue({
       data: mockTransactions,
       status: 200,
       statusText: "OK",
@@ -204,7 +203,7 @@ describe("Statement Component", () => {
     const { rerender } = render(<Statement refreshTrigger={0} />);
 
     await waitFor(() => {
-      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+      expect(mockedApiGet).toHaveBeenCalledTimes(1);
     });
 
     await waitFor(() => {
@@ -214,7 +213,7 @@ describe("Statement Component", () => {
     rerender(<Statement refreshTrigger={1} />);
 
     await waitFor(() => {
-      expect(mockedAxios.get).toHaveBeenCalledTimes(2);
+      expect(mockedApiGet).toHaveBeenCalledTimes(2);
     });
 
     await waitFor(() => {

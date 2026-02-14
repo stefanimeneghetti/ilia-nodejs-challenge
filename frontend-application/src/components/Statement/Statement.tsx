@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import api from "src/services/api";
 import {
   StyledPaper,
   HeaderBox,
@@ -38,10 +38,7 @@ function Statement({ refreshTrigger = 0 }: StatementProps) {
     setError(null);
 
     try {
-      const response = await axios.get("/api/transactions", {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-        },
+      const response = await api.get("/api/transactions", {
         params: {
           ...(activeFilter && { type: activeFilter }),
         },

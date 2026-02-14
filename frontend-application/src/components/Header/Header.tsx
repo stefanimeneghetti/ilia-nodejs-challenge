@@ -8,7 +8,7 @@ import {
 } from "./Header.styles";
 import { useState } from "react";
 import TransactionModal from "../CreateTransactionModal/CreateTransactionModal";
-import axios from "axios";
+import api from "src/services/api";
 import { Snackbar, Alert, type AlertColor } from "@mui/material";
 import getErrorMessage from "../../utils/getErrorMessage";
 import { useTranslation } from "react-i18next";
@@ -63,11 +63,7 @@ function Header({ onTransactionCreated }: HeaderProps) {
     setLoading(true);
 
     try {
-      await axios.post("/api/transactions", transaction, {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-        },
-      });
+      await api.post("/api/transactions", transaction);
 
       showSnackbar(t("createNewTransactionSucceed"), "success");
       onTransactionCreated?.();
