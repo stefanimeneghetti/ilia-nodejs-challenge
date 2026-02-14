@@ -17,29 +17,31 @@ import {
   CancelButton,
   SaveButton,
 } from "./CreateTransactionModal.styles";
+import { useTranslation } from "react-i18next";
 
 interface TransactionModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: (transaction: any) => void;
+  onSave: (transaction: FormData) => void;
 }
 
 interface FormData {
   user_id: string;
-  amount: string;
+  amount: number;
   type: "CREDIT" | "DEBIT";
 }
 
 function TransactionModal({ open, onClose, onSave }: TransactionModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     user_id: "",
-    amount: "",
+    amount: 0,
     type: "CREDIT",
   });
 
   const [fieldErrors, setFieldErrors] = useState({
     user_id: "",
-    amount: "",
+    amount: 0,
   });
 
   const handleChange = (
@@ -54,7 +56,7 @@ function TransactionModal({ open, onClose, onSave }: TransactionModalProps) {
       if (value.length > 0 && !/^[a-zA-Z0-9_]+$/.test(value)) {
         setFieldErrors((prev) => ({
           ...prev,
-          user_id: "Use apenas letras, números e underscore (_)",
+          user_id: t("userIdHint"),
         }));
       } else {
         setFieldErrors((prev) => ({
@@ -80,17 +82,17 @@ function TransactionModal({ open, onClose, onSave }: TransactionModalProps) {
   const handleSubmit = () => {
     const transactionToSave = {
       user_id: formData.user_id,
-      amount: parseInt(formData.amount, 10),
+      amount: Number(formData.amount),
       type: formData.type,
     };
 
     onSave(transactionToSave);
-    setFormData({ user_id: "", amount: "", type: "CREDIT" });
-    setFieldErrors({ user_id: "", amount: "" });
+    setFormData({ user_id: "", amount: 0, type: "CREDIT" });
+    setFieldErrors({ user_id: "", amount: 0 });
     onClose();
   };
 
-  const isValidInteger = (value: string) => {
+  const isValidInteger = (value: number) => {
     if (!value) return false;
     const num = Number(value);
     return Number.isInteger(num) && num > 0;
@@ -113,27 +115,26 @@ function TransactionModal({ open, onClose, onSave }: TransactionModalProps) {
     if (formData.user_id && !isValidUserId(formData.user_id)) {
       setFieldErrors((prev) => ({
         ...prev,
-        user_id:
-          "ID do usuário não pode conter espaços ou caracteres especiais",
+        user_id: t("userIdError"),
       }));
     }
   };
 
   return (
     <StyledDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <StyledDialogTitle>Nova Transação</StyledDialogTitle>
+      <StyledDialogTitle>{t("createNewTransactionButton")}</StyledDialogTitle>
       <StyledDialogContent>
         <FormBox as="form">
           <StyledTextField
             required
             fullWidth
-            label="ID do Usuário"
+            label={t("userIdLabel")}
             name="user_id"
             value={formData.user_id}
             onChange={handleChange}
             onBlur={handleUserIdBlur}
             autoFocus
-            placeholder="Digite o ID do usuário (letras, números e _)"
+            placeholder={t("userIdHint")}
             error={
               !!fieldErrors.user_id ||
               (formData.user_id !== "" && !isValidUserId(formData.user_id))
@@ -141,7 +142,7 @@ function TransactionModal({ open, onClose, onSave }: TransactionModalProps) {
             helperText={
               fieldErrors.user_id ||
               (formData.user_id !== "" && !isValidUserId(formData.user_id)
-                ? "Use apenas letras, números e underscore (_)"
+                ? t("userIdError")
                 : "")
             }
             slotProps={{
@@ -154,12 +155,12 @@ function TransactionModal({ open, onClose, onSave }: TransactionModalProps) {
           <StyledTextField
             required
             fullWidth
-            label="Valor"
+            label={t("amountLabel")}
             name="amount"
             type="number"
             value={formData.amount}
             onChange={handleChange}
-            placeholder="Digite o valor (apenas números inteiros)"
+            placeholder={t("amountPlaceholder")}
             slotProps={{
               htmlInput: {
                 step: "1",
@@ -167,31 +168,31 @@ function TransactionModal({ open, onClose, onSave }: TransactionModalProps) {
                 pattern: "[0-9]*",
               },
             }}
-            error={formData.amount !== "" && !isValidInteger(formData.amount)}
+            error={formData.amount !== 0 && !isValidInteger(formData.amount)}
             helperText={
-              formData.amount !== "" && !isValidInteger(formData.amount)
-                ? "Digite um número inteiro válido"
+              formData.amount !== 0 && !isValidInteger(formData.amount)
+                ? t("amountError")
                 : ""
             }
           />
 
           <StyledFormControl fullWidth>
-            <InputLabel>Tipo</InputLabel>
+            <InputLabel>{t("typeLabel")}</InputLabel>
             <Select
               name="type"
               value={formData.type}
-              label="Tipo"
+              label={t("typeLabel")}
               onChange={handleSelectChange}
             >
-              <MenuItem value="CREDIT">Crédito</MenuItem>
-              <MenuItem value="DEBIT">Débito</MenuItem>
+              <MenuItem value="CREDIT">{t("transactionTypeCredit")}</MenuItem>
+              <MenuItem value="DEBIT">{t("transactionTypeDebit")}</MenuItem>
             </Select>
           </StyledFormControl>
         </FormBox>
       </StyledDialogContent>
       <StyledDialogActions>
         <CancelButton onClick={onClose} color="inherit">
-          Cancelar
+          {t("cancelButtonText")}
         </CancelButton>
         <SaveButton
           onClick={handleSubmit}
@@ -199,7 +200,7 @@ function TransactionModal({ open, onClose, onSave }: TransactionModalProps) {
           startIcon={<Save />}
           disabled={!isFormValid()}
         >
-          Salvar
+          {t("saveButtonText")}
         </SaveButton>
       </StyledDialogActions>
     </StyledDialog>

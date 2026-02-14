@@ -8,7 +8,9 @@ import {
   Amount,
   UserId,
   StyledDivider,
+  IconWrapper,
 } from "./Transaction.styles";
+import { useTranslation } from "react-i18next";
 
 interface TransactionProps {
   transaction: {
@@ -20,19 +22,29 @@ interface TransactionProps {
 }
 
 export default function Transaction({ transaction }: TransactionProps) {
-  const formattedAmount = transaction.amount.toFixed(2);
+  const { t } = useTranslation();
+
   const sign = transaction.type === "CREDIT" ? "+" : "-";
+
+  const formattedAmount = t("balanceValue", {
+    value: Intl.NumberFormat(t("format.decimal"), {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(transaction.amount),
+  });
 
   return (
     <TransactionContainer>
       <TransactionContent>
-        <TransactionIcon type={transaction.type} />
+        <IconWrapper>
+          <TransactionIcon type={transaction.type} />
+        </IconWrapper>
 
         <DetailsContainer>
           <HeaderRow>
             <TransactionId variant="body2">{transaction.id}</TransactionId>
             <Amount variant="body1" $type={transaction.type}>
-              {sign} R$ {formattedAmount}
+              {sign} {formattedAmount}
             </Amount>
           </HeaderRow>
           <UserId variant="body2">{transaction.user_id}</UserId>
