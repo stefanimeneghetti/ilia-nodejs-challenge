@@ -111,7 +111,7 @@ function Statement({ onTransactionCreated }: StatementProps) {
       setTransactions(response.data);
     } catch (error) {
       console.error("Erro ao carregar transações:", error);
-      setError(t("loadTransactionsFail"));
+      setError("loadTransactionsFail");
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ function Statement({ onTransactionCreated }: StatementProps) {
     }
 
     if (error) {
-      return <ErrorTypography color="error">{error}</ErrorTypography>;
+      return <ErrorTypography color="error">{t(error)}</ErrorTypography>;
     }
 
     if (transactions.length === 0) {
