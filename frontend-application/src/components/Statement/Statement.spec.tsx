@@ -7,10 +7,29 @@ import api from "src/services/api";
 vi.mock("src/services/api", () => ({
   default: {
     get: vi.fn(),
+    post: vi.fn(),
   },
 }));
 
 const mockedApiGet = vi.mocked(api.get);
+const mockedApiPost = vi.mocked(api.post);
+
+vi.mock("../CreateTransactionModal/CreateTransactionModal", () => ({
+  default: ({ open, onClose, onSave }: any) =>
+    open ? (
+      <div data-testid="transaction-modal">
+        <h2>New Transaction</h2>
+        <button
+          onClick={() =>
+            onSave({ user_id: "user1", type: "CREDIT", amount: 100 })
+          }
+        >
+          Save
+        </button>
+        <button onClick={onClose}>Cancel</button>
+      </div>
+    ) : null,
+}));
 
 vi.mock("../StatementFilters/StatementFilters", () => ({
   default: ({ onFilterChange }: { onFilterChange: (filter: any) => void }) => (
@@ -47,6 +66,15 @@ vi.mock("react-i18next", () => ({
         transactionTypeAll: "All",
         transactionTypeCredit: "Credit",
         transactionTypeDebit: "Debit",
+        headerTitle: "Financial Transactions",
+        createNewTransactionButton: "New Transaction",
+        createNewTransactionButtonLoading: "Creating...",
+        createNewTransactionSucceed: "Transaction created successfully!",
+        createNewTransactionError: "Error creating transaction",
+        createNewTransactionErrorNetwork: "Network error. Please try again.",
+        createNewTransactionErrorMessage: "An error occurred",
+        createNewTransactionErrorGeneric: "An unexpected error occurred",
+        createTransactionError: "Error creating transaction",
       };
       return translations[key] || key;
     },
@@ -77,147 +105,237 @@ describe("Statement Component", () => {
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
-  it("should load and display transactions successfully", async () => {
-    mockedApiGet.mockResolvedValueOnce({
-      data: mockTransactions,
-      status: 200,
-      statusText: "OK",
-      headers: {},
-      config: {} as any,
+  describe("list transactions", () => {
+    it("should load and display transactions successfully", async () => {
+      mockedApiGet.mockResolvedValueOnce({
+        data: mockTransactions,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
+      });
+
+      render(<Statement />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByText("Statement")).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("transaction-TRX-001")).toBeInTheDocument();
+        expect(screen.getByTestId("transaction-TRX-002")).toBeInTheDocument();
+        expect(screen.getByTestId("transaction-TRX-003")).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByText("No transactions found"),
+      ).not.toBeInTheDocument();
     });
 
-    render(<Statement />);
+    it("should display empty state when no transactions", async () => {
+      mockedApiGet.mockResolvedValueOnce({
+        data: [],
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
+      });
 
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      render(<Statement />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByText("No transactions found")).toBeInTheDocument();
+
+      expect(
+        screen.queryByTestId("transaction-TRX-001"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("transaction-TRX-002"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("transaction-TRX-003"),
+      ).not.toBeInTheDocument();
+
+      const transactionElements = screen.queryAllByTestId(/transaction-/);
+      expect(transactionElements).toHaveLength(0);
     });
 
-    expect(screen.getByText("Statement")).toBeInTheDocument();
+    it("should filter transactions by type when clicking Credit button", async () => {
+      const user = userEvent.setup();
 
-    await waitFor(() => {
+      mockedApiGet.mockResolvedValueOnce({
+        data: mockTransactions,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
+      });
+
+      render(<Statement />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      });
+
+      const creditTransactions = mockTransactions.filter(
+        (t) => t.type === "CREDIT",
+      );
+      mockedApiGet.mockResolvedValueOnce({
+        data: creditTransactions,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
+      });
+
+      const creditButton = screen.getByRole("button", { name: "Credit" });
+      await user.click(creditButton);
+
+      await waitFor(() => {
+        expect(mockedApiGet).toHaveBeenCalledWith("/api/transactions", {
+          params: { type: "CREDIT" },
+        });
+      });
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      });
+
       expect(screen.getByTestId("transaction-TRX-001")).toBeInTheDocument();
-      expect(screen.getByTestId("transaction-TRX-002")).toBeInTheDocument();
       expect(screen.getByTestId("transaction-TRX-003")).toBeInTheDocument();
+      expect(
+        screen.queryByTestId("transaction-TRX-002"),
+      ).not.toBeInTheDocument();
     });
 
-    expect(screen.queryByText("No transactions found")).not.toBeInTheDocument();
+    it("should show error message when request fails", async () => {
+      mockedApiGet.mockRejectedValueOnce(new Error("Network error"));
+
+      render(<Statement />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByText("Failed to load transactions"),
+      ).toBeInTheDocument();
+
+      expect(screen.queryByTestId(/transaction-/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("No transactions found"),
+      ).not.toBeInTheDocument();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
   });
 
-  it("should display empty state when no transactions", async () => {
-    mockedApiGet.mockResolvedValueOnce({
-      data: [],
-      status: 200,
-      statusText: "OK",
-      headers: {},
-      config: {} as any,
+  describe("create transaction", () => {
+    const mockOnTransactionCreated = vi.fn();
+
+    it("should open modal when clicking New Transaction button", async () => {
+      const user = userEvent.setup();
+      render(<Statement />);
+
+      const newTransactionButton = screen.getByText("New Transaction");
+      await user.click(newTransactionButton);
+
+      expect(screen.getByTestId("transaction-modal")).toBeInTheDocument();
     });
 
-    render(<Statement />);
+    it("should call onTransactionCreated when transaction is created successfully", async () => {
+      const user = userEvent.setup();
+      mockedApiPost.mockResolvedValueOnce({ data: { id: "123" } });
 
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
-    });
+      render(<Statement onTransactionCreated={mockOnTransactionCreated} />);
 
-    expect(screen.getByText("No transactions found")).toBeInTheDocument();
+      await user.click(screen.getByText("New Transaction"));
 
-    expect(screen.queryByTestId("transaction-TRX-001")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("transaction-TRX-002")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("transaction-TRX-003")).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("transaction-modal")).toBeInTheDocument();
+      });
 
-    const transactionElements = screen.queryAllByTestId(/transaction-/);
-    expect(transactionElements).toHaveLength(0);
-  });
+      await user.click(screen.getByText("Save"));
 
-  it("should filter transactions by type when clicking Credit button", async () => {
-    const user = userEvent.setup();
+      await waitFor(() => {
+        expect(mockedApiPost).toHaveBeenCalledWith("/api/transactions", {
+          user_id: "user1",
+          type: "CREDIT",
+          amount: 100,
+        });
+      });
 
-    mockedApiGet.mockResolvedValueOnce({
-      data: mockTransactions,
-      status: 200,
-      statusText: "OK",
-      headers: {},
-      config: {} as any,
-    });
+      await waitFor(() => {
+        expect(mockOnTransactionCreated).toHaveBeenCalledTimes(1);
+        expect(mockedApiGet).toHaveBeenCalledTimes(2);
+      });
 
-    render(<Statement />);
-
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
-    });
-
-    const creditTransactions = mockTransactions.filter(
-      (t) => t.type === "CREDIT",
-    );
-    mockedApiGet.mockResolvedValueOnce({
-      data: creditTransactions,
-      status: 200,
-      statusText: "OK",
-      headers: {},
-      config: {} as any,
-    });
-
-    const creditButton = screen.getByRole("button", { name: "Credit" });
-    await user.click(creditButton);
-
-    await waitFor(() => {
-      expect(mockedApiGet).toHaveBeenCalledWith("/api/transactions", {
-        params: { type: "CREDIT" },
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId("transaction-modal"),
+        ).not.toBeInTheDocument();
       });
     });
 
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    it("should show success snackbar when transaction is created", async () => {
+      const user = userEvent.setup();
+      mockedApiPost.mockResolvedValueOnce({ data: { id: "123" } });
+
+      render(<Statement />);
+
+      await user.click(screen.getByText("New Transaction"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("transaction-modal")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText("Save"));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Transaction created successfully!"),
+        ).toBeInTheDocument();
+      });
+
+      const alert = screen.getByRole("alert");
+      expect(alert).toHaveClass("MuiAlert-filledSuccess");
     });
 
-    expect(screen.getByTestId("transaction-TRX-001")).toBeInTheDocument();
-    expect(screen.getByTestId("transaction-TRX-003")).toBeInTheDocument();
-    expect(screen.queryByTestId("transaction-TRX-002")).not.toBeInTheDocument();
-  });
+    it("should show error snackbar when transaction creation fails", async () => {
+      const user = userEvent.setup();
+      const error = new Error("Network Error");
+      mockedApiPost.mockRejectedValueOnce(error);
 
-  it("should show error message when request fails", async () => {
-    mockedApiGet.mockRejectedValueOnce(new Error("Network error"));
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
-    render(<Statement />);
+      render(<Statement />);
 
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
-    });
+      await user.click(screen.getByText("New Transaction"));
 
-    expect(screen.getByText("Failed to load transactions")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("transaction-modal")).toBeInTheDocument();
+      });
 
-    expect(screen.queryByTestId(/transaction-/)).not.toBeInTheDocument();
-    expect(screen.queryByText("No transactions found")).not.toBeInTheDocument();
+      await user.click(screen.getByText("Save"));
 
-    expect(consoleErrorSpy).toHaveBeenCalled();
-  });
+      await waitFor(() => {
+        expect(
+          screen.getByText("Error creating transaction"),
+        ).toBeInTheDocument();
+      });
 
-  it("should reload transactions when refreshTrigger changes", async () => {
-    mockedApiGet.mockResolvedValue({
-      data: mockTransactions,
-      status: 200,
-      statusText: "OK",
-      headers: {},
-      config: {} as any,
-    });
+      const alert = screen.getByRole("alert");
+      expect(alert).toHaveClass("MuiAlert-filledError");
 
-    const { rerender } = render(<Statement refreshTrigger={0} />);
-
-    await waitFor(() => {
-      expect(mockedApiGet).toHaveBeenCalledTimes(1);
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
-    });
-
-    rerender(<Statement refreshTrigger={1} />);
-
-    await waitFor(() => {
-      expect(mockedApiGet).toHaveBeenCalledTimes(2);
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
   });
 });

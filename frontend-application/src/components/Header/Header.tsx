@@ -1,87 +1,9 @@
-import { Add } from "@mui/icons-material";
-import {
-  HeaderRoot,
-  HeaderContainer,
-  HeaderTitle,
-  NewTransactionButton,
-  ButtonText,
-} from "./Header.styles";
-import { useState } from "react";
-import TransactionModal from "../CreateTransactionModal/CreateTransactionModal";
-import api from "src/services/api";
-import { Snackbar, Alert, type AlertColor } from "@mui/material";
-import getErrorMessage from "../../utils/getErrorMessage";
+import SimpleLanguageSelector from "../LanguageSelector/LanguageSelector";
+import { HeaderRoot, HeaderContainer, HeaderTitle } from "./Header.styles";
 import { useTranslation } from "react-i18next";
 
-interface Transaction {
-  user_id: string;
-  type: "CREDIT" | "DEBIT";
-  amount: number;
-}
-
-interface HeaderProps {
-  onTransactionCreated?: () => void;
-}
-
-interface SnackbarState {
-  open: boolean;
-  message: string;
-  severity: AlertColor;
-}
-
-function Header({ onTransactionCreated }: HeaderProps) {
+function Header() {
   const { t } = useTranslation();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState<SnackbarState>({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleOpenModal = () => {
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
-
-  const showSnackbar = (message: string, severity: AlertColor) => {
-    setSnackbar({
-      open: true,
-      message,
-      severity,
-    });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
-
-  const createTransaction = async (transaction: Transaction) => {
-    setLoading(true);
-
-    try {
-      await api.post("/api/transactions", transaction);
-
-      showSnackbar(t("createNewTransactionSucceed"), "success");
-      onTransactionCreated?.();
-      handleCloseModal();
-    } catch (error) {
-      console.error("Erro ao criar uma nova transação:", error);
-
-      const errorMessage = getErrorMessage(error, t);
-
-      showSnackbar(errorMessage, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveTransaction = (transaction: Transaction) => {
-    createTransaction(transaction);
-  };
 
   return (
     <>
@@ -90,43 +12,9 @@ function Header({ onTransactionCreated }: HeaderProps) {
           <HeaderTitle variant="h6" as="h1">
             {t("headerTitle")}
           </HeaderTitle>
-
-          <NewTransactionButton
-            onClick={handleOpenModal}
-            variant="contained"
-            startIcon={<Add />}
-            disabled={loading}
-          >
-            <ButtonText>
-              {loading
-                ? t("createNewTransactionButtonLoading")
-                : t("createNewTransactionButton")}
-            </ButtonText>
-          </NewTransactionButton>
+          <SimpleLanguageSelector />
         </HeaderContainer>
       </HeaderRoot>
-
-      <TransactionModal
-        open={modalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSaveTransaction}
-      />
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={2000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </>
   );
 }
